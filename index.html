@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tazayud Owner PMO — Controls System</title>
+<!--
+  The tab icon is set from src/assets/brand/index.ts, NOT with a <link> here,
+  and that is not a preference.
+
+  vite-plugin-singlefile inlines scripts and stylesheets; it does NOT inline a
+  <link rel="icon">, so a link here would be emitted as a sibling .svg and
+  referenced by path. dist/index.html is opened by double-clicking it, with no
+  server and usually no sibling file — so the one asset in the whole build
+  would 404, silently, leaving a blank icon nobody investigates and a failed
+  network request in a deliverable that is supposed to make none.
+
+  Imported from a module instead, Vite inlines it as a data URI into the
+  bundle that is already inlined here. No second copy, no second request.
+-->
+<meta name="theme-color" content="#0B2545">
+</head>
+<body>
+<div id="root"></div>
+<script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

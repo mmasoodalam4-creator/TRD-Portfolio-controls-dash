@@ -1,0 +1,19 @@
+node_modules/
+*.log
+.DS_Store
+tests/output/
+
+# Local environment. .env carries DATABASE_URL and AUTH_SECRET, so it must
+# never be committable. .env.example is the documented template and IS tracked.
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Local Postgres clusters started by scripts/local-postgres.sh
+tazayud-pg-*/
+tests/platform/
+tests/platform-repro/
+tests/qa-build/
+tests/uat/
+tests/hgw-build/

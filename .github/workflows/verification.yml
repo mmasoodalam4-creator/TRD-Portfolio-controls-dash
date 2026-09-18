@@ -1,0 +1,68 @@
+name: Tazayud verification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      full_suite:
+        description: Run the database-backed API, platform, QA, UAT, and end-to-end gates
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: Offline verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run verify
+
+  platform:
+    name: Platform, API, QA, UAT, and E2E
+    needs: offline
+    if: github.event_name == 'workflow_dispatch' && inputs.full_suite
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: pmo
+          POSTGRES_PASSWORD: pmo
+          POSTGRES_DB: pmo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pmo -d pmo"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://pmo:pmo@127.0.0.1:5432/pmo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run check:api
+      - run: npm run check:duties
+      - run: npm run check:workflow
+      - run: npm run check:platform
+      - run: npm run check:qa
+      - run: npm run check:uat
+      - run: npm run check:e2e

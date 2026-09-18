@@ -1,0 +1,15 @@
+{
+  "//": "The API and the seed run on Node, not in a browser. Kept separate from the app's tsconfig so the server cannot reach for a DOM global by accident. The include list is also the statement of what the server is allowed to share with the app: the domain model and the pure data layer, and NOT the browser repository or its localStorage persistence.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["api", "server", "db", "src/domain", "src/data"],
+  "exclude": [
+    "src/data/repository.ts",
+    "src/data/http-repository.ts",
+    "src/data/persistence.ts"
+  ]
+}
