@@ -1,0 +1,914 @@
+/* ==========================================================================
+   TAZAYUD OWNER PMO — stylesheet
+   Ported verbatim from the demo's styles.js. Not restructured: changing the
+   CSS and the component tree in the same step would make any visual
+   regression impossible to attribute. Modularisation comes later.
+   ========================================================================== */
+/* ---------------------------------------------------------------------------
+   Inter, self-hosted.
+
+   The deliverable is one portable file that must render correctly with no
+   network. An earlier build imported Inter from Google Fonts, which silently
+   fell back to system fonts whenever the file was opened offline — so the
+   typeface the design was drawn in was the one users least reliably saw.
+
+   The variable latin subset is vendored at src/assets/fonts/ (Inter 4.1 via
+   @fontsource-variable/inter 5.3.0, 48 KB woff2) and inlined as a data URI by
+   the build, costing ~63 KB in dist/index.html. The system stack stays as the
+   fallback so the page still renders if the face ever fails to decode.
+   --------------------------------------------------------------------------- */
+@font-face{
+  font-family:'InterVariable';
+  font-style:normal;
+  font-display:swap;
+  font-weight:100 900;
+  src:url('../assets/fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+:root{
+  --navy:#0B2545; --navy2:#13315C; --steel:#1B4965; --gold:#C9A227; --gold-soft:#E8D9A0;
+  --bg:#F4F6F9; --card:#FFFFFF; --line:#E5E9F0; --ink:#0F1B2D; --muted:#6B7A90;
+  --green:#1E9E5A; --green-bg:#E7F6EE; --amber:#E0902B; --amber-bg:#FBF1E1;
+  --red:#D24141; --red-bg:#FBEAEA; --blue:#2F6DD0; --blue-bg:#E8F1FB;
+  /* Layered elevation: a contact shadow, a mid shadow and a wide ambient one.
+     One token, so every surface lifts by the same physics. */
+  --shadow:0 1px 2px rgba(16,27,45,.06),0 4px 12px rgba(16,27,45,.06),0 14px 34px rgba(16,27,45,.05);
+  /* The lit surface every raised card wears — white falling away to the
+     faintest cool grey, with a hairline top highlight from --edge. */
+  --surface:linear-gradient(180deg,#ffffff 0%,#fbfcfe 100%);
+  --edge:inset 0 1px 0 rgba(255,255,255,.9);
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%}
+body{font-family:'InterVariable',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif;background:var(--bg);color:var(--ink);
+  font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#c6cede;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select{font-family:inherit;font-size:13px}
+
+/* ---------- layout ---------- */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:236px;background:linear-gradient(180deg,#0B2545,#0a1f3d);color:#fff;
+  display:flex;flex-direction:column;flex-shrink:0;transition:width .2s;position:relative;z-index:20}
+.sidebar.collapsed{width:64px}
+.side-logo{padding:20px 18px 14px;display:flex;align-items:center;gap:11px;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo-mark{width:34px;height:34px;flex-shrink:0}
+.logo-text .lt1{font-weight:800;font-size:16px;letter-spacing:.06em;line-height:1}
+.logo-text .lt2{font-size:7.5px;letter-spacing:.22em;color:var(--gold-soft);margin-top:3px}
+.side-sub{padding:11px 18px;font-size:11px;color:#9db3d0;border-bottom:1px solid rgba(255,255,255,.08);letter-spacing:.02em}
+.nav{flex:1;overflow-y:auto;padding:8px 10px}
+.nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15)}
+.nav-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;color:#cdd9ea;
+  font-size:13px;font-weight:500;margin-bottom:1px;transition:background .12s,color .12s;white-space:nowrap}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item.active{background:linear-gradient(90deg,var(--gold),#b8911f);color:#1a1200;font-weight:600;
+  box-shadow:0 2px 8px rgba(201,162,39,.3)}
+.nav-item .ic{width:19px;flex-shrink:0;display:flex;justify-content:center}
+.sidebar.collapsed .nav-item .lbl,.sidebar.collapsed .logo-text,.sidebar.collapsed .side-sub,
+.sidebar.collapsed .user-meta{display:none}
+.side-user{border-top:1px solid rgba(255,255,255,.08);padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#a07d12);
+  display:flex;align-items:center;justify-content:center;font-weight:700;color:#241a00;flex-shrink:0;font-size:14px}
+.user-meta{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;cursor:pointer;color:inherit;font:inherit}
+.user-meta:hover .um1{text-decoration:underline}
+.user-meta .um1{font-weight:600;font-size:12.5px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-meta .um2{font-size:10.5px;color:#9db3d0}
+img.avatar{object-fit:cover}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--card);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;
+  align-items:flex-start;justify-content:space-between;gap:18px;flex-shrink:0}
+.page-title h1{font-size:23px;font-weight:750;letter-spacing:-.01em}
+.page-title p{color:var(--muted);font-size:12.5px;margin-top:2px}
+.topbar-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;min-width:0}
+.content{flex:1;overflow-y:auto;padding:22px 24px 40px}
+
+/* ---------- scope selector ---------- */
+.scope{display:flex;gap:10px;align-items:flex-end}
+.scope-field{display:flex;flex-direction:column;gap:3px}
+.scope-field label{font-size:10px;color:var(--muted);font-weight:600;padding-left:2px}
+.scope-field select{border:1px solid var(--line);border-radius:9px;padding:8px 30px 8px 11px;background:var(--card);
+  font-weight:600;color:var(--ink);min-width:135px;appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7A90' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center}
+.scope-field select:focus{outline:none;border-color:var(--navy2);box-shadow:0 0 0 3px rgba(19,49,92,.1)}
+
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);
+  display:flex;align-items:center;justify-content:center;position:relative;color:var(--steel)}
+.icon-btn:hover{background:var(--bg)}
+.badge-dot{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;
+  width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.btn{border-radius:10px;padding:9px 16px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;
+  gap:7px;transition:.12s;white-space:nowrap}
+.btn-primary{background:linear-gradient(180deg,#12325e,var(--navy));color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 2px 6px rgba(11,37,69,.22)}
+.btn-primary:hover{background:var(--navy2)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#b8911f);color:#231900;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 8px rgba(201,162,39,.32)}
+.btn-gold:hover{filter:brightness(1.05)}
+.btn-ghost{border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.btn-ghost:hover{background:var(--bg)}
+.btn-ai{background:linear-gradient(135deg,#2f6dd0,#1e56b0);color:#fff}
+.btn-ai:hover{filter:brightness(1.08)}
+
+/* ---------- project header band ---------- */
+.proj-band{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;
+  display:flex;align-items:center;gap:18px;box-shadow:var(--shadow),var(--edge);margin-bottom:18px}
+.proj-thumb{width:96px;height:66px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#cbd5e6}
+.proj-head-main{display:flex;align-items:center;gap:10px}
+.proj-head-main .pid{font-size:20px;font-weight:800}
+.proj-head-main .pname{font-size:16px;color:var(--muted);font-weight:500}
+.proj-metrics{display:flex;gap:26px;flex-wrap:wrap;margin-top:8px}
+.pm-item .pm-l{font-size:10.5px;color:var(--muted);font-weight:600}
+.pm-item .pm-v{font-size:14px;font-weight:700;margin-top:1px}
+
+/* ---------- cards / KPIs ---------- */
+.grid{display:grid;gap:16px}
+.kpi,.cta-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 17px;
+  box-shadow:var(--shadow),var(--edge);position:relative;transition:transform .12s,box-shadow .12s}
+.kpi.click{cursor:pointer}
+.kpi.click:hover{transform:translateY(-2px);box-shadow:0 2px 6px rgba(16,27,45,.08),0 10px 26px rgba(16,27,45,.12),var(--edge)}
+.kpi-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.kpi-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:inset 0 -2px 4px rgba(16,27,45,.08),inset 0 1px 0 rgba(255,255,255,.55),0 2px 6px rgba(16,27,45,.10)}
+.kpi-l{font-size:11.5px;color:var(--muted);font-weight:600;line-height:1.2}
+.kpi-v{font-size:23px;font-weight:800;letter-spacing:-.02em}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow),var(--edge)}
+.card-h{padding:15px 18px 0;display:flex;align-items:center;justify-content:space-between}
+.card-h h3{font-size:14.5px;font-weight:700}
+.card-b{padding:16px 18px}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tab{padding:10px 15px;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;
+  white-space:nowrap;transition:.12s}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--navy2);border-bottom-color:var(--navy2)}
+
+/* ---------- table ---------- */
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:#F7F9FC;text-align:left;padding:11px 13px;font-size:11px;font-weight:700;color:var(--muted);
+  border-bottom:1px solid var(--line);white-space:nowrap}
+tbody td{padding:11px 13px;border-bottom:1px solid #eef1f6;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody tr.click{cursor:pointer;transition:background .1s}
+tbody tr.click:hover{background:#F7F9FC}
+tbody tr.sel{background:var(--blue-bg)}
+tbody tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--navy2)}
+.tid{color:var(--blue);font-weight:700}
+.tbl-total td{background:#F7F9FC;font-weight:700}
+
+/* ---------- badges ---------- */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.b-green{background:var(--green-bg);color:var(--green)}
+.b-amber{background:var(--amber-bg);color:var(--amber)}
+.b-red{background:var(--red-bg);color:var(--red)}
+.b-blue{background:var(--blue-bg);color:var(--blue)}
+.b-grey{background:#eef1f6;color:var(--muted)}
+.pill{padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600}
+
+/* ---------- progress ---------- */
+/* A recessed track and a glossed fill. The fill's colour arrives inline as a
+   background-color, so the gloss here layers over whatever colour the value
+   earned — the width stays the datum, the depth is only light. */
+.prog{height:7px;background:#e9edf3;border-radius:5px;overflow:hidden;min-width:70px;
+  box-shadow:inset 0 1px 2px rgba(16,27,45,.12)}
+.prog span{display:block;height:100%;border-radius:5px;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.38) 0%,rgba(255,255,255,0) 55%,rgba(11,37,69,.14) 100%)}
+
+/* ---------- filters ---------- */
+.filters{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+.ffield{display:flex;flex-direction:column;gap:3px}
+.ffield label{font-size:10px;color:var(--muted);font-weight:600;padding-left:2px}
+.ffield select,.ffield input{border:1px solid var(--line);border-radius:9px;padding:8px 11px;background:var(--card);min-width:120px}
+.ffield select:focus,.ffield input:focus{outline:none;border-color:var(--navy2)}
+.search{position:relative;flex:1;min-width:180px}
+.search input{width:100%;padding-left:34px}
+.search .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted)}
+
+/* ---------- drawer ---------- */
+.drawer-scrim{position:fixed;inset:0;background:rgba(11,37,69,.28);z-index:40;animation:fade .15s}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:420px;background:var(--card);z-index:41;
+  box-shadow:-8px 0 30px rgba(16,27,45,.15);display:flex;flex-direction:column;animation:slideIn .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.drawer-h{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.drawer-h .dh-id{font-size:17px;font-weight:800}
+.drawer-b{flex:1;overflow-y:auto;padding:16px 18px}
+.drawer-f{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:10px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-bottom:16px}
+.kv .kv-l{font-size:10.5px;color:var(--muted);font-weight:600}
+.kv .kv-v{font-size:13px;font-weight:600;margin-top:2px}
+.doc-link{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border:1px solid var(--line);
+  border-radius:9px;margin-bottom:7px;font-size:12px;color:var(--blue);font-weight:600}
+.doc-link:hover{background:var(--bg)}
+
+/* ---------- modal ---------- */
+.modal-scrim{position:fixed;inset:0;background:rgba(11,37,69,.4);z-index:50;display:flex;align-items:center;
+  justify-content:center;animation:fade .15s;padding:20px}
+.modal{background:var(--card);border-radius:16px;box-shadow:0 20px 60px rgba(16,27,45,.3);width:100%;
+  max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;animation:pop .2s cubic-bezier(.2,.8,.2,1)}
+.modal.wide{max-width:920px}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-h{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.modal-h h2{font-size:17px;font-weight:750}
+.modal-b{padding:20px 22px;overflow-y:auto}
+.modal-f{padding:16px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-field{display:flex;flex-direction:column;gap:5px}
+.form-field.full{grid-column:1/-1}
+.form-field label{font-size:11.5px;font-weight:600;color:var(--ink)}
+/* Why a control is unavailable, said in words beside it. A disabled button
+   with nothing next to it is indistinguishable from a broken one — which is
+   how the archive button came to be reported as doing nothing at all. */
+.form-hint{font-size:11px;line-height:1.55;color:var(--muted);margin-top:4px}
+/* A development that has been delivered and closed out, said at the top of
+   every one of its screens. The figures below it are a record, not a position
+   somebody is still steering, and nothing else on the page says so. */
+.closed-note{margin-top:6px;font-size:11.5px;line-height:1.6;color:var(--muted);
+  border-left:3px solid var(--green);padding-left:9px}
+.form-field input,.form-field select{border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+.form-field input:focus,.form-field select:focus{outline:none;border-color:var(--navy2);box-shadow:0 0 0 3px rgba(19,49,92,.08)}
+
+/* ---------- toast ---------- */
+.toast-wrap{position:fixed;bottom:22px;right:22px;z-index:60;display:flex;flex-direction:column;gap:10px}
+.toast{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--green);border-radius:11px;
+  padding:13px 16px;box-shadow:0 8px 28px rgba(16,27,45,.18);display:flex;align-items:center;gap:11px;
+  min-width:290px;animation:toastIn .25s cubic-bezier(.2,.8,.2,1)}
+.toast.err{border-left-color:var(--red)}
+.toast.info{border-left-color:var(--blue)}
+@keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast .tt{font-weight:700;font-size:13px}
+.toast .ts{font-size:11.5px;color:var(--muted)}
+
+/* ---------- misc ---------- */
+.row{display:flex;align-items:center;gap:8px}
+.between{display:flex;align-items:center;justify-content:space-between}
+.muted{color:var(--muted)}
+.link{color:var(--blue);font-weight:600;cursor:pointer}
+.link:hover{text-decoration:underline}
+.chip{padding:3px 10px;border-radius:7px;font-size:11.5px;font-weight:600;background:var(--bg);color:var(--muted)}
+button.chip{border:1px solid var(--line);cursor:pointer}
+button.chip.on{background:var(--blue-bg);border-color:#cfe0f6;color:var(--blue)}
+/* Legend dots read as small spheres — an inner shade below, a catchlight
+   above — whatever colour they carry inline. */
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;
+  box-shadow:inset -1px -1.5px 2px rgba(11,37,69,.28),inset 1px 1px 1.5px rgba(255,255,255,.55)}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.fade-up{animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.pagination{display:flex;align-items:center;gap:5px}
+.pg{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--card);
+  display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12.5px}
+.pg.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.donut-legend{display:flex;flex-direction:column;gap:9px}
+.dl-row{display:flex;align-items:center;justify-content:space-between;font-size:12.5px}
+/* The key a line or bar chart draws for itself. It WRAPS rather than
+   scrolling or clipping: a three-series key is wider than a third-width card,
+   and a name broken across two lines is readable where a cut one is not. Each
+   item stays whole (nowrap), so a break falls between names and never inside
+   "Anticipated Final Cost". The names are set in the page's ink — the swatch
+   beside them carries the colour, and coloured text on white is the pair most
+   likely to fail contrast. */
+.chart-legend{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:5px 16px;margin-top:10px;font-size:11.5px;color:var(--ink)}
+.cl-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.cl-item svg{flex:0 0 auto;overflow:visible}
+.mini-tt{position:relative;display:inline-flex;cursor:help;border-bottom:1px dotted var(--muted)}
+.mini-tt .tip{visibility:hidden;position:absolute;bottom:130%;left:50%;transform:translateX(-50%);
+  background:var(--navy);color:#fff;padding:6px 10px;border-radius:7px;font-size:11px;white-space:nowrap;
+  z-index:5;font-weight:500;box-shadow:var(--shadow)}
+.mini-tt:hover .tip{visibility:visible}
+.matrix{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:100%}
+.matrix .cell{aspect-ratio:1.5;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:12px;color:#fff}
+.recon-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #eef1f6}
+.recon-row:last-child{border:none}
+.big-status{background:linear-gradient(135deg,var(--green-bg),#d3f0e0);border:1px solid #b6e4c9;border-radius:14px;
+  padding:20px 24px;display:flex;align-items:center;gap:16px}
+
+/* ---------------------------------------------------------------- sign-in
+   Only ever rendered by the platform build; the self-contained deliverable
+   never mounts these. Kept in the same stylesheet so there is one place the
+   design tokens live. */
+.signin-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 24px;
+}
+
+.signin-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 8px 28px rgba(15, 32, 57, .08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.signin-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+/* The official lockup, at the size its wordmarks stay legible. It sets the
+   row's height, so the heading beside it aligns to the artwork rather than the
+   artwork being squeezed to the heading. */
+.signin-lockup { width: 78px; height: auto; flex-shrink: 0; }
+
+.signin-brand h1 { font-size: 16px; margin: 0; letter-spacing: -.2px; }
+.signin-brand p { font-size: 11.5px; margin: 2px 0 0; }
+
+.signin-card label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.signin-card input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font: inherit;
+  font-size: 13px;
+  background: var(--bg);
+}
+
+.signin-card input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(47, 109, 208, .12);
+}
+
+.signin-card .btn { margin-top: 18px; justify-content: center; }
+
+.signin-error {
+  margin-top: 12px;
+  padding: 9px 11px;
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--red);
+  background: rgba(210, 65, 65, .08);
+  border: 1px solid rgba(210, 65, 65, .2);
+}
+
+.signin-foot { font-size: 11px; margin: 16px 0 0; text-align: center; }
+
+/* --------------------------------------------------- reporting period entry
+   The template rendered as a form. Inputs sit inside table cells so the
+   register reads the way the workbook does rather than as a stack of fields. */
+.entry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.entry-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.entry-grid input,
+input.cell {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: var(--card);
+  width: 100%;
+}
+
+.entry-grid input:focus,
+input.cell:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(47, 109, 208, .12);
+}
+
+input.cell { padding: 5px 7px; min-width: 90px; }
+input.cell.wide { min-width: 220px; }
+input.cell.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* The live reconciliation panel. The workbook prints "CHECK: differs from
+   WBS" and leaves it; this shows the same disagreement as it is created. */
+.recon-list { display: flex; flex-direction: column; gap: 6px; }
+
+.recon-check {
+  display: grid;
+  grid-template-columns: 10px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 12.5px;
+}
+
+.recon-check.ok { background: rgba(30, 158, 90, .05); border-color: rgba(30, 158, 90, .22); }
+.recon-check.bad { background: rgba(210, 65, 65, .05); border-color: rgba(210, 65, 65, .22); }
+
+.recon-check .dot.green { background: var(--green); }
+.recon-check .dot.red { background: var(--red); }
+.recon-check .recon-label { font-weight: 600; }
+.recon-check .recon-figs { font-variant-numeric: tabular-nums; color: var(--muted); }
+.recon-check .recon-verdict { font-weight: 600; min-width: 120px; text-align: right; }
+.recon-row.ok .recon-verdict { color: var(--green); }
+.recon-row.bad .recon-verdict { color: var(--red); }
+
+/* Navigation items are buttons, so the keyboard reaches them. They keep the
+   look they had as divs. */
+button.nav-item{width:100%;border:none;background:transparent;font:inherit;text-align:left;cursor:pointer}
+button.nav-item:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.side-user{display:flex;align-items:center;gap:10px}
+
+/* ---------------------------------------------------------------- glossary */
+
+/* The marker beside a term. It sits inline with a label, so it must not
+   change the label's line height or push a KPI tile taller. */
+.info-wrap { position: relative; display: inline-flex; vertical-align: middle; margin-left: 5px; }
+.info-dot {
+  width: 14px; height: 14px; border-radius: 50%; padding: 0; cursor: pointer;
+  border: 1px solid var(--gold); background: transparent; color: #8C7315;
+  font: 700 9px/1 Inter, system-ui, sans-serif; display: grid; place-items: center;
+}
+.info-dot:hover { background: var(--gold); color: #fff; }
+.info-pop {
+  position: absolute; top: 20px; left: -8px; z-index: 60; width: 288px;
+  display: flex; flex-direction: column; gap: 7px;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 13px; box-shadow: 0 18px 40px -18px rgba(11, 37, 69, .38);
+  text-align: left; white-space: normal;
+}
+.info-name { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+.info-abbr {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .06em; color: var(--muted);
+  margin-left: 6px;
+}
+.info-def { font-size: 11.5px; line-height: 1.6; color: #3B4A60; font-weight: 400; }
+.info-more {
+  border: 0; background: none; padding: 0; cursor: pointer; text-align: left;
+  font: 600 11px/1.4 Inter, system-ui, sans-serif; color: var(--blue);
+}
+.info-more:hover { text-decoration: underline; }
+
+.gloss-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(272px, 1fr)); }
+.gloss-term {
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px; background: #fff;
+}
+.gloss-term.asked { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201, 162, 39, .16); }
+.gloss-term-h { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.gloss-term-n { font-size: 12.5px; font-weight: 700; }
+.gloss-term-ab { font-size: 9.5px; font-weight: 700; letter-spacing: .06em; color: var(--muted); }
+.gloss-term p { margin: 0 0 8px; font-size: 11.5px; line-height: 1.65; color: #3B4A60; }
+.formula {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px;
+  background: #F5F7FA; border: 1px solid var(--line); border-radius: 7px;
+  padding: 6px 8px; color: #22405F; overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+}
+.gloss-feeds {
+  display: flex; align-items: flex-start; gap: 5px; margin-top: 7px;
+  font-size: 10.5px; line-height: 1.5; color: var(--muted);
+}
+
+.gloss-steps { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(228px, 1fr)); }
+.gloss-step { border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px; background: #fff; }
+.gloss-step-n {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px;
+  font-weight: 600; letter-spacing: .1em; color: #8C7315;
+}
+.gloss-step h4 { margin: 4px 0 6px; font-size: 12.5px; font-weight: 700; }
+.gloss-step p { margin: 0; font-size: 11.5px; line-height: 1.65; color: #3B4A60; }
+
+.cmp { display: flex; flex-direction: column; gap: 12px; }
+.cmp-row { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 14px; align-items: center; }
+.cmp-name b { display: block; font-size: 12px; font-weight: 700; }
+.cmp-name span { display: block; font-size: 10.5px; line-height: 1.5; color: var(--muted); }
+.cmp-track { height: 30px; background: #F1F4F8; border-radius: 8px; display: flex; overflow: hidden; }
+.cmp-fill {
+  display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 11.5px;
+  font-weight: 700; white-space: nowrap; min-width: 0; border-radius: 8px 0 0 8px;
+}
+
+.gloss-gaps {
+  display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line);
+}
+.gloss-gap { border-left: 3px solid var(--gold); padding-left: 11px; }
+.gloss-gap-l {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted);
+}
+.gloss-gap-v { font-size: 18px; font-weight: 800; letter-spacing: -.02em; margin: 2px 0 1px; }
+.gloss-gap-n { font-size: 10.5px; line-height: 1.5; color: var(--muted); }
+
+@media (max-width: 900px) {
+  .cmp-row { grid-template-columns: 1fr; gap: 5px; }
+}
+
+/* ------------------------------------------------- monthly breakdown table */
+
+/* One row per measure, one column per month. The description column is sticky
+   so the row a person is reading stays named while the months scroll; without
+   it a twelve-column table of nine-figure amounts either pushes the page
+   sideways or loses its labels. */
+.mbt { min-width: 1180px; }
+.mbt th, .mbt td { white-space: nowrap; }
+.mbt .mb-desc {
+  position: sticky; left: 0; z-index: 2; background: #fff; text-align: left;
+  min-width: 210px; box-shadow: 1px 0 0 var(--line);
+}
+.mbt thead .mb-desc { background: #FAFBFD; z-index: 3; }
+.mb-label {
+  display: flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 600; color: var(--ink);
+}
+.mb-note { display: block; font-size: 10.5px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+.mbt td { font-variant-numeric: tabular-nums; }
+.mb-dash { color: var(--muted); }
+
+/* The data-date column: the last month with reported figures in it, and the
+   one every index above is measured at. */
+.mbt .mb-now { background: var(--blue-bg); }
+.mbt thead .mb-now { background: var(--blue); color: #fff; }
+.mb-now-tag { font-weight: 700; }
+.mb-fore { color: var(--muted); }
+
+.mb-band td, .mb-band th { background: #FBF9F1; }
+.mb-band .mb-desc { background: #FBF9F1; }
+.mb-band td.mb-now { background: var(--blue-bg); }
+
+.mb-dot {
+  display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  background: #DFE4EC;
+}
+.mb-dot.on { background: var(--green); }
+
+.mb-pill {
+  display: inline-block; min-width: 42px; text-align: center; border-radius: 999px;
+  padding: 2px 8px; font-size: 10.5px; font-weight: 700;
+}
+.mb-pill.ok { background: var(--green-bg); color: var(--green); }
+.mb-pill.warn { background: var(--amber-bg); color: var(--amber); }
+.mb-pill.bad { background: var(--red-bg); color: var(--red); }
+
+.mb-tag {
+  display: inline-block; border-radius: 6px; padding: 2px 7px;
+  font-size: 10px; font-weight: 700; letter-spacing: .03em;
+}
+.mb-tag.rep { background: var(--green-bg); color: var(--green); }
+.mb-tag.fore { background: #EEF2F7; color: var(--muted); }
+
+/* ------------------------------------------------------------------ brand */
+
+/* The Tazayud mark is artwork, not a glyph: an image so the official file can
+   replace it without a code change. The build inlines it as a data URI, so the
+   portable deliverable still makes no network requests. */
+/* A fixed BOX, with the artwork fitted inside it, rather than a fixed width
+   and a free height. The mark's aspect ratio is a property of whichever file
+   is in src/assets/brand — letting it set the height meant replacing the
+   artwork silently moved the whole sidebar down, and every nav item with it. */
+.logo-mark { width: 34px; height: 34px; object-fit: contain; flex-shrink: 0; }
+.logo-text .lt1 { color: #fff; }
+.logo-text .lt2 { color: #8FC6DA; }
+
+/* Who built it. A credit, at credit size: it sits below the navigation, above
+   the signed-in account, and never competes with the owner's own mark. */
+.built-by {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 16px;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+  font-size: 9px; letter-spacing: .04em; color: #7d93b0;
+}
+/* The BMI+ mark is blue and orange on white, and blue on navy is a mark
+   nobody can read. A small white plate carries it instead — the artwork
+   itself is untouched, which is the point: an SVG or PNG rendered as an image
+   is an isolated document, so there is no honest way to recolour it from CSS
+   and a filter would only muddy it. */
+.bmi-mark {
+  width: 54px; height: auto; flex-shrink: 0;
+  background: #fff; border-radius: 4px; padding: 3px 5px;
+}
+.sidebar.collapsed .built-by span { display: none; }
+.sidebar.collapsed .built-by { justify-content: center; padding: 9px 4px; }
+
+/* ------------------------------------------------------------- printing */
+
+/* The PDF button on a report preview is the browser's own print dialogue,
+   where every desktop platform offers "Save as PDF". A PDF writer in the
+   bundle would be a large dependency producing a worse page than the one
+   already on screen — so this hides the application around the report sheet
+   and prints exactly what the person is looking at.
+
+   `visibility` rather than `display`, because the sheet is a DESCENDANT of the
+   things being hidden: hiding an ancestor outright would take the sheet with
+   it. Hidden ancestors still lay out, so the sheet is lifted to the top-left
+   of the page and given the full width. */
+@media print {
+  @page { margin: 14mm; }
+
+  body { background: #fff; }
+
+  .app, .modal-scrim, .modal, .modal-b { visibility: hidden; }
+
+  /* Everything that frames the sheet rather than being part of it. */
+  .modal-h, .toast-host, .sidebar, .topbar { display: none !important; }
+
+  .report-sheet, .report-sheet * { visibility: visible; }
+
+  .report-sheet {
+    position: absolute; left: 0; top: 0; width: 100%;
+    border: 0 !important; border-radius: 0 !important; padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* A scroll container becomes a clip on paper. */
+  .report-sheet .tbl-wrap { overflow: visible !important; }
+
+  /* Keep the colours the report is read by — a variance printed in black is
+     a variance whose sign the reader has to work out. */
+  .report-sheet { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ------------------------------------------------------------- messages */
+
+/* Two panels: who, and what was said. The list is a fixed rail and the
+   conversation takes the rest, because a conversation that reflows as names
+   change length is a conversation that jumps under the reader. */
+.msg-wrap {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 16px;
+  /* The two panels share the height of the content area and scroll INSIDE
+     themselves. A chat that scrolls the page instead leaves the compose box
+     somewhere below the fold, which is where a message goes to not get sent. */
+  height: calc(100vh - 168px);
+  min-height: 460px;
+}
+
+.msg-people, .msg-thread { display: flex; flex-direction: column; min-height: 0; }
+
+.msg-search { padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.msg-search input {
+  width: 100%; border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 10px; font-size: 12.5px; font-family: inherit;
+}
+
+.msg-list { overflow-y: auto; flex: 1; min-height: 0; }
+
+.msg-person {
+  display: flex; align-items: flex-start; gap: 10px; width: 100%;
+  padding: 11px 14px; border: 0; border-bottom: 1px solid #eef1f6;
+  background: none; text-align: left; cursor: pointer; font-family: inherit;
+}
+.msg-person:hover { background: var(--bg); }
+.msg-person.on { background: var(--blue-bg); }
+.msg-person .avatar.sm { width: 32px; height: 32px; font-size: 12px; }
+.msg-person-t { flex: 1; min-width: 0; }
+.msg-person-n { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: 12.5px; }
+.msg-person-s { font-size: 10.5px; color: var(--muted); letter-spacing: .01em; margin-top: 1px; }
+/* One line of the last thing said, clipped. Two lines of preview is a preview
+   competing with the conversation it is meant to summarise. */
+.msg-person-l {
+  font-size: 11.5px; color: var(--muted); margin-top: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.msg-unread {
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: var(--red); color: #fff; font-size: 10.5px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+.msg-offline {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-top: 1px solid var(--line);
+  font-size: 11px; color: var(--muted);
+}
+
+/* ---- the conversation ---- */
+
+.msg-body {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 8px;
+  background: var(--bg);
+}
+/* A short conversation sits at the BOTTOM of the panel, where the next
+   message will appear, rather than stranded at the top above an acre of
+   empty ground. `margin-top: auto` on the first child rather than
+   `justify-content: flex-end` on the column: the latter makes the overflow
+   unscrollable upwards in several browsers once the thread grows past the
+   panel, which is the moment scrolling starts to matter. */
+.msg-body > :first-child { margin-top: auto; }
+
+.msg-day { display: flex; align-items: center; justify-content: center; margin: 10px 0 6px; }
+.msg-day span {
+  font-size: 10.5px; color: var(--muted); background: #fff;
+  border: 1px solid var(--line); border-radius: 10px; padding: 2px 10px;
+}
+
+.msg-row { display: flex; margin-top: 2px; }
+.msg-row.mine { justify-content: flex-end; }
+
+.msg-bubble {
+  max-width: min(560px, 72%);
+  background: #fff; border: 1px solid var(--line); border-radius: 12px;
+  padding: 9px 12px 6px;
+}
+/* Mine reads as mine at a glance, which is the whole job of the alignment and
+   the tint together — alignment alone fails the moment the window is narrow. */
+.msg-row.mine .msg-bubble { background: var(--blue-bg); border-color: #cfe0f6; }
+
+/* Long words and pasted references must wrap rather than widen the bubble past
+   its own container. `pre-wrap` keeps the line breaks somebody typed. */
+.msg-text { font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg-at { font-size: 10px; color: var(--muted); text-align: right; margin-top: 3px; }
+
+.msg-about {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid #cfe0f6; background: #fff; color: var(--blue);
+  border-radius: 6px; padding: 2px 7px; margin-bottom: 6px;
+  font-size: 10.5px; font-weight: 600; font-family: inherit; cursor: pointer;
+}
+.msg-about:disabled { color: var(--muted); border-color: var(--line); cursor: default; }
+
+.msg-compose {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 9px; align-items: end;
+  padding: 12px 14px; border-top: 1px solid var(--line);
+}
+.msg-compose select, .msg-compose textarea {
+  border: 1px solid var(--line); border-radius: 9px;
+  padding: 8px 10px; font-size: 12.5px; font-family: inherit;
+}
+.msg-compose textarea { resize: none; line-height: 1.5; }
+.msg-compose.closed {
+  display: block; font-size: 11.5px; color: var(--muted); line-height: 1.6;
+}
+
+/* ---- the honest empty state ---- */
+
+.empty-panel {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 10px; padding: 40px 30px; max-width: 560px; margin: 0 auto;
+}
+.empty-panel h3 { font-size: 15px; margin: 0; }
+.empty-panel p { font-size: 12.5px; line-height: 1.7; color: var(--muted); margin: 0; }
+.empty-mark {
+  width: 52px; height: 52px; border-radius: 14px; background: var(--blue-bg);
+  color: var(--blue); display: flex; align-items: center; justify-content: center;
+}
+
+/* A laptop at 1366 has no room for a 320px rail beside a readable conversation. */
+@media (max-width: 1200px) {
+  .msg-wrap { grid-template-columns: 260px minmax(0, 1fr); }
+}
+
+/* The manual, at the foot of "How to use this tool". A row rather than a
+   card: it sits under the six steps as the thing to read next, not as a
+   seventh step. */
+.gloss-manual {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  margin-top: 18px; padding: 16px 18px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 12px;
+}
+.gloss-manual h4 { font-size: 13.5px; margin: 0 0 3px; }
+.gloss-manual p { font-size: 12px; line-height: 1.6; margin: 0; max-width: 520px; }
+.gloss-manual .btn { flex-shrink: 0; text-decoration: none; }
+
+/* ==========================================================================
+   THE PROJECT WORKSPACE
+   Band, module tab row, reporting calendar, period chain, module.
+
+   The tab row scrolls rather than wraps: fifteen modules do not fit a laptop,
+   and a row that wraps to two lines moves every module under it by 40px the
+   moment one is added. The month strip is a twelve-column grid with a minimum
+   width, so a month cell is never narrower than its own status word.
+   ========================================================================== */
+.ws-tabs {
+  display: flex; gap: 2px; overflow-x: auto; margin-bottom: 14px;
+  border-bottom: 1px solid var(--line); padding-bottom: 0;
+}
+.ws-tab {
+  display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto;
+  padding: 9px 13px; font-size: 12.5px; font-weight: 600; color: var(--muted);
+  background: none; border: none; border-bottom: 2px solid transparent;
+  cursor: pointer; white-space: nowrap; font-family: inherit;
+}
+.ws-tab .ic { display: inline-flex; opacity: .8 }
+.ws-tab:hover { color: var(--ink) }
+.ws-tab.active { color: var(--navy2); border-bottom-color: var(--navy2) }
+.ws-tab.active .ic { opacity: 1 }
+
+.ws-periods {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 11px 13px 13px; margin-bottom: 11px;
+}
+.ws-per-top {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.ws-years { display: flex; gap: 4px }
+.ws-years button {
+  padding: 4px 11px; font-size: 12px; font-weight: 700; border-radius: 7px;
+  border: 1px solid var(--line); background: var(--card); color: var(--muted);
+  cursor: pointer; font-family: inherit;
+}
+.ws-years button.on { background: var(--navy); border-color: var(--navy); color: #fff }
+.ws-legend {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-left: auto;
+  font-size: 10px; color: var(--muted);
+}
+.ws-legend span { display: inline-flex; align-items: center; gap: 5px }
+.ws-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block }
+.d-approved { background: var(--green) }
+.d-awaiting { background: var(--amber) }
+.d-returned { background: var(--red) }
+.d-open     { background: var(--blue) }
+.d-none     { background: #cfd8e6 }
+.d-future   { background: #fff; border: 1px dashed #c3ccda }
+
+.ws-months {
+  display: grid; grid-template-columns: repeat(12, minmax(72px, 1fr));
+  gap: 5px; overflow-x: auto;
+}
+.ws-mo {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 4px 9px; border: 1px solid var(--line); border-radius: 9px;
+  background: var(--card); cursor: pointer; font-family: inherit;
+  border-bottom-width: 3px;
+}
+.ws-mo .m { font-size: 12px; font-weight: 700; color: var(--ink) }
+.ws-mo .st { font-size: 9px; color: var(--muted); text-align: center; line-height: 1.3 }
+.ws-mo:hover { background: #F7F9FC }
+.ws-mo.on { box-shadow: 0 0 0 2px var(--navy2); border-color: var(--navy2) }
+.ws-mo.s-approved { border-bottom-color: var(--green) }
+.ws-mo.s-awaiting { border-bottom-color: var(--amber) }
+.ws-mo.s-returned { border-bottom-color: var(--red) }
+.ws-mo.s-open     { border-bottom-color: var(--blue) }
+.ws-mo.s-none     { border-bottom-color: #cfd8e6 }
+.ws-mo.s-future   { border-bottom-color: transparent; border-style: dashed; background: #FBFCFE }
+.ws-mo.s-future .m { color: var(--muted) }
+
+.ws-bar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 10px 14px; margin-bottom: 14px;
+}
+.ws-chain { display: flex; align-items: center; gap: 18px; flex-wrap: wrap }
+.ws-stage { display: flex; align-items: center; gap: 8px }
+.ws-stage .ic {
+  width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 10px; font-weight: 800; background: #eef1f6; color: var(--muted);
+}
+.ws-stage.done .ic { background: var(--green-bg); color: var(--green) }
+.ws-stage.now .ic { background: var(--amber-bg); color: var(--amber) }
+.ws-stage .who { display: flex; flex-direction: column; line-height: 1.3 }
+.ws-stage .who b { font-size: 11.5px }
+.ws-stage .who span { font-size: 10px; color: var(--muted) }
+.ws-bar-right {
+  margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.ws-note { font-size: 10.5px; max-width: 46ch; line-height: 1.5 }
+.ws-foot { font-size: 11px; margin-top: 14px; line-height: 1.6 }
+
+@media (max-width: 1100px) {
+  .ws-bar-right { margin-left: 0 }
+  .ws-legend { margin-left: 0 }
+}
+
+/* The development-level actions, above the module tab row: things that are
+   about the development itself rather than about one module. */
+.ws-actions { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 10px }
+
+/* The count beside a sub-tab's name. Not a badge: it is part of the label,
+   so it takes the tab's own colour and goes quiet when the tab is not active. */
+.tab-n {
+  margin-left: 6px; font-size: 10.5px; font-weight: 700; padding: 1px 6px;
+  border-radius: 20px; background: #eef1f6; color: var(--muted);
+}
+.tab.active .tab-n { background: var(--blue-bg); color: var(--navy2) }
